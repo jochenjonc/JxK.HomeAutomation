@@ -19,7 +19,7 @@ namespace JxK.HomeAutomation.Controllers
             // Initialize GpioPins
             _gpioPinUp = gpioController.OpenPin(GpioPinUp);
             _gpioPinUp.Write(DefaultRelayOpenValue);
-            _gpioPinUp.SetDriveMode(GpioPinDriveMode.Output);                     
+            _gpioPinUp.SetDriveMode(GpioPinDriveMode.Output);
 
             _gpioPinStop = gpioController.OpenPin(GpioPinStop);
             _gpioPinStop.Write(DefaultRelayOpenValue);
@@ -31,6 +31,7 @@ namespace JxK.HomeAutomation.Controllers
                       
         }
 
+        // TODO: setters
         public int GpioPinUp => 26;
         public int GpioPinStop => 20;
         public int GpioPinDown => 21;
