@@ -1,27 +1,41 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using Windows.ApplicationModel.Resources;
 
 namespace JxK.HomeAutomation.Controllers
 {
     internal class MailController
     {
         private SmtpClient _smtpClient;
+        private ResourceLoader _resourceLoader;
 
-        public MailController(string smtpHost, int smtpPort, string username, string password)
+        public MailController()
         {
-            _smtpClient = new SmtpClient(smtpHost, smtpPort);
-            _smtpClient.UseDefaultCredentials = false;
-            _smtpClient.Credentials = new NetworkCredential(username, password);
-            _smtpClient.EnableSsl = true;
+            _resourceLoader = ResourceLoader.GetForViewIndependentUse("MailResources");
+
+            var smtpHost = _resourceLoader.GetString("SmtpHost");
+            var smtpPort = int.Parse(_resourceLoader.GetString("SmtpPort"));
+            var username = _resourceLoader.GetString("SmtpUsername");
+            var password = _resourceLoader.GetString("SmtpPassword");
+
+            _smtpClient = new SmtpClient(smtpHost, smtpPort)
+            {
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(username, password),
+                EnableSsl = true
+            };
         }
 
-        public void Send(string to, string subject, string body)
+        public void Send(string subject, string body)
         {
+            var fromMailAddress = _resourceLoader.GetString("FromMailAddress");
+            var toMailAddress = _resourceLoader.GetString("ToMailAddress");
+
             var mailMessage = new MailMessage
             {
-                From = new MailAddress("automation@jxk.be")
+                From = new MailAddress(fromMailAddress)
             };
-            mailMessage.To.Add(to);
+            mailMessage.To.Add(toMailAddress);
             mailMessage.Subject = subject;
             mailMessage.Body = body;
 

@@ -130,6 +130,9 @@
     <value>465</value>
   </data>
   <data name="SmtpUsername" xml:space="preserve">
-    <value>blabla</value>
+    <value />
+  </data>
+  <data name="ToMailAddress" xml:space="preserve">
+    <value />
   </data>
 </root>
