@@ -33,7 +33,6 @@ namespace JxK.HomeAutomation
 
             // Create a Velux Controller
             _veluxController = new VeluxController(GpioController.GetDefault());
-            //_veluxController.GpioPinUp = 56;
 
             // Setup a simple timer for testing/demo purposes
             _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromSeconds(10));
