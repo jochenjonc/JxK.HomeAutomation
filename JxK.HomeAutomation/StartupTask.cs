@@ -13,6 +13,7 @@ namespace JxK.HomeAutomation
     {
         private BackgroundTaskDeferral _deferral;
         private VeluxController _veluxController;
+        private MailController _mailController;
         private ThreadPoolTimer _timer;
 
         public async void Run(IBackgroundTaskInstance taskInstance)
@@ -34,6 +35,12 @@ namespace JxK.HomeAutomation
             // Create a Velux Controller
             _veluxController = new VeluxController(GpioController.GetDefault());
 
+            // Create a Mail Controller
+            _mailController = new MailController()
+            {
+                SubjectPrefix = "[HomeAutomation]"
+            };
+
             // Setup a simple timer for testing/demo purposes
             _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromSeconds(10));
 
@@ -44,6 +51,8 @@ namespace JxK.HomeAutomation
 
         private void Timer_Tick(ThreadPoolTimer timer)
         {
+            // _mailController.Send("Timer Ticked", "");
+
             _veluxController.Up();
             Task.Delay(-1).Wait(2000);
 

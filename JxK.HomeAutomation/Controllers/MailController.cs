@@ -6,40 +6,58 @@ namespace JxK.HomeAutomation.Controllers
 {
     internal class MailController
     {
-        private SmtpClient _smtpClient;
         private ResourceLoader _resourceLoader;
+
+        private string _smtpHost;
+        private int _smtpPort;
+        private string _username;
+        private string _password;
+
+        private string _fromMailAddress;
+        private string _toMailAddress;
 
         public MailController()
         {
             _resourceLoader = ResourceLoader.GetForViewIndependentUse("MailResources");
 
-            var smtpHost = _resourceLoader.GetString("SmtpHost");
-            var smtpPort = int.Parse(_resourceLoader.GetString("SmtpPort"));
-            var username = _resourceLoader.GetString("SmtpUsername");
-            var password = _resourceLoader.GetString("SmtpPassword");
+            _smtpHost = _resourceLoader.GetString("SmtpHost");
+            _smtpPort = int.Parse(_resourceLoader.GetString("SmtpPort"));
+            _username = _resourceLoader.GetString("SmtpUsername");
+            _password = _resourceLoader.GetString("SmtpPassword");
 
-            _smtpClient = new SmtpClient(smtpHost, smtpPort)
-            {
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(username, password),
-                EnableSsl = true
-            };
+            _fromMailAddress = _resourceLoader.GetString("FromMailAddress");
+            _toMailAddress = _resourceLoader.GetString("ToMailAddress");
         }
+
+        public string SubjectPrefix { get; set; }
 
         public void Send(string subject, string body)
         {
-            var fromMailAddress = _resourceLoader.GetString("FromMailAddress");
-            var toMailAddress = _resourceLoader.GetString("ToMailAddress");
 
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(fromMailAddress)
-            };
-            mailMessage.To.Add(toMailAddress);
-            mailMessage.Subject = subject;
-            mailMessage.Body = body;
 
-            _smtpClient.Send(mailMessage);
+            using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort)) {
+
+                smtpClient.UseDefaultCredentials = false;
+                smtpClient.Credentials = new NetworkCredential(_username, _password);
+                smtpClient.EnableSsl = true;
+
+
+                if (!string.IsNullOrEmpty(SubjectPrefix))
+                {
+                    subject = $"{SubjectPrefix} {subject}";
+                }
+
+                using (var mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress(_fromMailAddress);
+                    mailMessage.To.Add(_toMailAddress);
+
+                    mailMessage.Subject = subject;
+                    mailMessage.Body = body;
+
+                    smtpClient.Send(mailMessage);
+                }
+            }
         }
     }
 }
