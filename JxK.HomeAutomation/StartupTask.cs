@@ -21,6 +21,9 @@ namespace JxK.HomeAutomation
             // Get the deferral object from the task instance, and take a reference to the taskInstance;
             _deferral = taskInstance.GetDeferral();
 
+            // Get notified when this task is being terminated by the OS
+            taskInstance.Canceled += TaskInstance_Canceled;
+
             // Create geolocator object
             Geolocator geolocator = new Geolocator();
 
@@ -42,16 +45,22 @@ namespace JxK.HomeAutomation
             };
 
             // Setup a simple timer for testing/demo purposes
-            _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromSeconds(10));
+            _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromMinutes(10));
 
 
-            // TODO: Use UWP to register a timed event
+            // IDEA: Use UWP to register a timed event
             //BackgroundTaskRegistration task = RegisterBackgroundTask(entryPoint, taskName, hourlyTrigger, userCondition);
+        }
+
+        private void TaskInstance_Canceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+        {
+            // Handle cancellation
+            _deferral.Complete();
         }
 
         private void Timer_Tick(ThreadPoolTimer timer)
         {
-            // _mailController.Send("Timer Ticked", "");
+             _mailController.Send("Timer Ticked", "");
 
             _veluxController.Up();
             Task.Delay(-1).Wait(2000);

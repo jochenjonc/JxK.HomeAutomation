@@ -33,14 +33,10 @@ namespace JxK.HomeAutomation.Controllers
 
         public void Send(string subject, string body)
         {
-
-
             using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort)) {
-
                 smtpClient.UseDefaultCredentials = false;
                 smtpClient.Credentials = new NetworkCredential(_username, _password);
                 smtpClient.EnableSsl = true;
-
 
                 if (!string.IsNullOrEmpty(SubjectPrefix))
                 {
