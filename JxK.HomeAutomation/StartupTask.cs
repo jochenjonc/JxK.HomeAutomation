@@ -1,6 +1,5 @@
 ﻿using JxK.HomeAutomation.Controllers;
 using System;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
 using Windows.Devices.Geolocation;
 using Windows.Devices.Gpio;
@@ -12,6 +11,7 @@ namespace JxK.HomeAutomation
     public sealed class StartupTask : IBackgroundTask
     {
         private BackgroundTaskDeferral _deferral;
+        private Geoposition _position;
         private VeluxController _veluxController;
         private MailController _mailController;
         private ThreadPoolTimer _timer;
@@ -25,15 +25,10 @@ namespace JxK.HomeAutomation
             taskInstance.Canceled += TaskInstance_Canceled;
 
             // Create geolocator object
-            Geolocator geolocator = new Geolocator();
+            var geolocator = new Geolocator();
 
             // Make the request for the current position
-            var pos = await geolocator.GetGeopositionAsync();
-
-            // Calculate sunrise & sunset
-            var solarTimes = new SolarTimes(DateTimeOffset.Now, pos.Coordinate.Point.Position.Latitude, pos.Coordinate.Point.Position.Longitude);
-            var sunrise = solarTimes.Sunrise;
-            var sunset = solarTimes.Sunset;
+            _position = await geolocator.GetGeopositionAsync();
 
             // Create a Velux Controller
             _veluxController = new VeluxController(GpioController.GetDefault());
@@ -45,7 +40,7 @@ namespace JxK.HomeAutomation
             };
 
             // Setup a simple timer for testing/demo purposes
-            _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromMinutes(10));
+            _timer = ThreadPoolTimer.CreatePeriodicTimer(Timer_Tick, TimeSpan.FromMinutes(30));
 
 
             // IDEA: Use UWP to register a timed event
@@ -60,16 +55,37 @@ namespace JxK.HomeAutomation
 
         private void Timer_Tick(ThreadPoolTimer timer)
         {
-             _mailController.Send("Timer Ticked", "");
+            // Get the current time
+            var currentTime = DateTimeOffset.Now;
+            var previousTime = currentTime.Subtract(timer.Period);
+            
+            // Calculate sunrise & sunset (since last time the timed ticked)
+            var solarTimes = new SolarTimes(previousTime, _position.Coordinate.Point.Position.Latitude, _position.Coordinate.Point.Position.Longitude);
+            var sunrise = new DateTimeOffset(solarTimes.Sunrise);
+            var sunset = new DateTimeOffset(solarTimes.Sunset);
 
-            _veluxController.Up();
-            Task.Delay(-1).Wait(2000);
+            // Check if the sun has set since the last time the timer ticked
+            if (previousTime <= sunset && sunset < currentTime)
+            {
+                _mailController.Send("Closing the Velux blinds", $"Sunset: {sunset.ToString("F")}\r\nCurrent time: {currentTime.ToString("F")}\r\nPrevious time: {previousTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+                _veluxController.Down();
+            }
+            //else
+            //{
+            //    _mailController.Send($"Logging all parameters ({currentTime.ToString("dd/HH")})", $"Sunset: {sunset.ToString("F")}\r\nCurrent time: {currentTime.ToString("F")}\r\nPrevious time: {previousTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+            //    _veluxController.Stop();
+            //}
 
-            _veluxController.Stop();
-            Task.Delay(-1).Wait(2000);
+            // 
 
-            _veluxController.Down();
-            Task.Delay(-1).Wait(2000);
+            //_veluxController.Up();
+            //Task.Delay(-1).Wait(2000);
+
+            //_veluxController.Stop();
+            //Task.Delay(-1).Wait(2000);
+
+            //_veluxController.Down();
+            //Task.Delay(-1).Wait(2000);
         }
     }
 }
