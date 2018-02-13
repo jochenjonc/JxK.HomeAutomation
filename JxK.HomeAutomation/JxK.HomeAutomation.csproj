@@ -98,6 +98,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controllers\MailController.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\VeluxController.cs" />
     <Compile Include="StartupTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
