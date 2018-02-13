@@ -12,12 +12,6 @@ namespace JxK.HomeAutomation.Controllers
             _localSettings = ApplicationData.Current.LocalSettings;
         }
 
-        public DateTimeOffset? PreviousTime
-        {
-            get => _localSettings.Values["#PreviousTime"] as DateTimeOffset?;
-            set => _localSettings.Values["#PreviousTime"] = value;
-        }
-
         public DateTimeOffset? LastOpeningTime
         {
             get => _localSettings.Values["#LastOpeningTime"] as DateTimeOffset?;
