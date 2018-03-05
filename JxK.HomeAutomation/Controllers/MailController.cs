@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Mail;
 using Windows.ApplicationModel.Resources;
 
@@ -33,26 +34,35 @@ namespace JxK.HomeAutomation.Controllers
 
         public void Send(string subject, string body)
         {
-            using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort)) {
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential(_username, _password);
-                smtpClient.EnableSsl = true;
-
-                if (!string.IsNullOrEmpty(SubjectPrefix))
+            try
+            {
+                using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort))
                 {
-                    subject = $"{SubjectPrefix} {subject}";
+                    smtpClient.UseDefaultCredentials = false;
+                    smtpClient.Credentials = new NetworkCredential(_username, _password);
+                    smtpClient.EnableSsl = true;
+
+                    if (!string.IsNullOrEmpty(SubjectPrefix))
+                    {
+                        subject = $"{SubjectPrefix} {subject}";
+                    }
+
+                    using (var mailMessage = new MailMessage())
+                    {
+                        mailMessage.From = new MailAddress(_fromMailAddress);
+                        mailMessage.To.Add(_toMailAddress);
+
+                        mailMessage.Subject = subject;
+                        mailMessage.Body = body;
+
+                        smtpClient.Send(mailMessage);
+                    }
                 }
-
-                using (var mailMessage = new MailMessage())
-                {
-                    mailMessage.From = new MailAddress(_fromMailAddress);
-                    mailMessage.To.Add(_toMailAddress);
-
-                    mailMessage.Subject = subject;
-                    mailMessage.Body = body;
-
-                    smtpClient.Send(mailMessage);
-                }
+            }
+            catch (Exception)
+            {
+                // Just do not crash
+                // TODO: Create somekind of queue of unsent messages, and send them when internet is availble again
             }
         }
     }
