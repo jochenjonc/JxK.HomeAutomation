@@ -83,9 +83,12 @@ namespace JxK.HomeAutomation
                 {
                     if (_settingsController.LastOpeningTime == null || _settingsController.LastOpeningTime.Value.Date != currentTime.Date)
                     {
-                        _mailController.Send("Opening the Velux blinds", $"Sunrise: {sunrise.ToString("F")}\r\nMargin: {margin.ToString("%m' min.'")}\r\n\r\nCurrent time: {currentTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+                        var sendMailResult = _mailController.Send("Opening the Velux blinds", $"Sunrise: {sunrise.ToString("F")}\r\nMargin: {margin.ToString("%m' min.'")}\r\n\r\nCurrent time: {currentTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+
                         _veluxController.Up();
                         _settingsController.LastOpeningTime = currentTime;
+
+                        sendMailResult.Wait();
                     }
                 }
             }
@@ -103,9 +106,12 @@ namespace JxK.HomeAutomation
             {
                 if (_settingsController.LastClosingTime == null || _settingsController.LastClosingTime.Value.Date != currentTime.Date)
                 {
-                    _mailController.Send("Closing the Velux blinds", $"Sunset: {sunset.ToString("F")}\r\nMargin: {margin.ToString("%m' min.'")}\r\n\r\nCurrent time: {currentTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+                    var sendMailResult = _mailController.Send("Closing the Velux blinds", $"Sunset: {sunset.ToString("F")}\r\nMargin: {margin.ToString("%m' min.'")}\r\n\r\nCurrent time: {currentTime.ToString("F")}\r\n\r\nLocation: http://www.google.com/maps/place/{_position.Coordinate.Point.Position.Latitude},{_position.Coordinate.Point.Position.Longitude}");
+
                     _veluxController.Down();
                     _settingsController.LastClosingTime = currentTime;
+
+                    sendMailResult.Wait();
                 }
             }
         }

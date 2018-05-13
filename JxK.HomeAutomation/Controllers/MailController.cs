@@ -1,6 +1,6 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
 
 namespace JxK.HomeAutomation.Controllers
@@ -32,37 +32,29 @@ namespace JxK.HomeAutomation.Controllers
 
         public string SubjectPrefix { get; set; }
 
-        public void Send(string subject, string body)
+        public async Task Send(string subject, string body)
         {
-            try
+            using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort))
             {
-                using (var smtpClient = new SmtpClient(_smtpHost, _smtpPort))
+                smtpClient.UseDefaultCredentials = false;
+                smtpClient.Credentials = new NetworkCredential(_username, _password);
+                smtpClient.EnableSsl = true;
+
+                if (!string.IsNullOrEmpty(SubjectPrefix))
                 {
-                    smtpClient.UseDefaultCredentials = false;
-                    smtpClient.Credentials = new NetworkCredential(_username, _password);
-                    smtpClient.EnableSsl = true;
-
-                    if (!string.IsNullOrEmpty(SubjectPrefix))
-                    {
-                        subject = $"{SubjectPrefix} {subject}";
-                    }
-
-                    using (var mailMessage = new MailMessage())
-                    {
-                        mailMessage.From = new MailAddress(_fromMailAddress);
-                        mailMessage.To.Add(_toMailAddress);
-
-                        mailMessage.Subject = subject;
-                        mailMessage.Body = body;
-
-                        smtpClient.Send(mailMessage);
-                    }
+                    subject = $"{SubjectPrefix} {subject}";
                 }
-            }
-            catch (Exception)
-            {
-                // Just do not crash
-                // TODO: Create somekind of queue of unsent messages, and send them when internet is availble again
+
+                using (var mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress(_fromMailAddress);
+                    mailMessage.To.Add(_toMailAddress);
+
+                    mailMessage.Subject = subject;
+                    mailMessage.Body = body;
+
+                    await smtpClient.SendMailAsync(mailMessage);
+                }
             }
         }
     }
