@@ -97,6 +97,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controllers\GeoController.cs" />
     <Compile Include="Controllers\MailController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\VeluxController.cs" />
@@ -108,6 +109,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="JxK.HomeAutomation_TemporaryKey.pfx" />
+    <PRIResource Include="Resources\GeoResources.resw" />
     <PRIResource Include="Resources\MailResources.resw" />
   </ItemGroup>
   <ItemGroup>
